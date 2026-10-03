@@ -1,8 +1,14 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+// In the built Tauri desktop app there is no Vite dev proxy, so we must
+// use the full absolute URL.  In browser dev mode the relative path still
+// works via Vite's proxy.
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+const BASE_URL = isTauri ? 'http://localhost:3001/api' : '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 

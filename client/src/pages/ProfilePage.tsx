@@ -4,7 +4,7 @@ import { userAPI } from '../api/client';
 import { useAuthStore } from '../store/authStore';
 
 const DAILY_TARGETS = [5, 10, 15, 20, 30];
-const LANGUAGES = [
+const LANGUAGES: { value: 'english' | 'bengali' | 'both'; label: string }[] = [
   { value: 'english', label: 'English Only' },
   { value: 'bengali', label: 'বাংলা Only' },
   { value: 'both', label: 'English + বাংলা' },

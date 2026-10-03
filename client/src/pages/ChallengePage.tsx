@@ -28,7 +28,7 @@ export default function ChallengePage() {
   const [startTime, setStartTime] = useState(0);
   const [loading, setLoading] = useState(false);
   const [finalScore, setFinalScore] = useState<{ score: number; correct: number; total: number } | null>(null);
-  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [timer, setTimer] = useState<ReturnType<typeof setInterval> | null>(null);
 
   const startChallenge = async () => {
     setLoading(true);

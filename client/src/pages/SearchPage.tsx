@@ -239,16 +239,16 @@ export default function SearchPage() {
               <div>
                 <div className="text-xs font-bold mb-1" style={{ color: 'var(--color-primary-light)' }}>SYNONYMS</div>
                 <div className="flex flex-wrap gap-1">
-                  {generatedData.synonyms?.slice(0, 4).map((s, i) => (
-                    <span key={i} className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary-light)', fontSize: '11px' }}>{s}</span>
+                  {generatedData.synonyms?.slice(0, 4).map((s: any, i) => (
+                    <span key={i} className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary-light)', fontSize: '11px' }}>{typeof s === 'string' ? s : s?.text || ''}</span>
                   ))}
                 </div>
               </div>
               <div>
                 <div className="text-xs font-bold mb-1" style={{ color: '#ef4444' }}>ANTONYMS</div>
                 <div className="flex flex-wrap gap-1">
-                  {generatedData.antonyms?.slice(0, 4).map((a, i) => (
-                    <span key={i} className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '11px' }}>{a}</span>
+                  {generatedData.antonyms?.slice(0, 4).map((a: any, i) => (
+                    <span key={i} className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '11px' }}>{typeof a === 'string' ? a : a?.text || ''}</span>
                   ))}
                 </div>
               </div>
