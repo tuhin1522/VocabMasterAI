@@ -1,0 +1,201 @@
+// This is your Prisma schema file for VocabMaster AI
+// Using SQLite for easy local setup (can migrate to PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  username          String   @unique
+  name              String
+  email             String   @unique
+  passwordHash      String
+  dailyWordTarget   Int      @default(10)
+  preferredLanguage String   @default("english") // "english" | "bengali" | "both"
+  role              String   @default("user") // "user" | "admin"
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  userWords        UserWord[]
+  learningSessions LearningSession[]
+  reviewAttempts   ReviewAttempt[]
+  userSentences    UserSentence[]
+  userFavorites    UserFavorite[]
+  streaks          UserStreak[]
+
+  @@map("users")
+}
+
+model Word {
+  id                String   @id @default(cuid())
+  word              String   @unique
+  meaning           String
+  bengaliMeaning    String?
+  partOfSpeech      String   @default("noun")
+  pronunciation     String?
+  difficulty        String   @default("B1") // A1, A2, B1, B2, C1, C2
+  category          String   @default("general") // daily, academic, business, ielts, etc.
+  mnemonic          String?
+  memoryAssociation String?
+  usageExplanation  String?
+  commonMistakes    String?  // JSON array stored as string
+  audioUrl          String?
+  isAiGenerated     Boolean  @default(false)
+  isApproved        Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  synonyms      Synonym[]
+  antonyms      Antonym[]
+  examples      Example[]
+  userWords     UserWord[]
+  reviewAttempts ReviewAttempt[]
+  userSentences UserSentence[]
+  userFavorites UserFavorite[]
+
+  @@map("words")
+}
+
+model Synonym {
+  id     String @id @default(cuid())
+  wordId String
+  text   String
+
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@map("synonyms")
+}
+
+model Antonym {
+  id     String @id @default(cuid())
+  wordId String
+  text   String
+
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@map("antonyms")
+}
+
+model Example {
+  id      String  @id @default(cuid())
+  wordId  String
+  sentence String
+  context  String? // "everyday" | "academic" | "professional"
+
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@map("examples")
+}
+
+model UserWord {
+  id              String    @id @default(cuid())
+  userId          String
+  wordId          String
+  status          String    @default("new") // new, learning, review, weak, strong, mastered
+  masteryLevel    Int       @default(0) // 0-100
+  confidenceScore Float     @default(0.0)
+  firstLearnedAt  DateTime?
+  lastReviewedAt  DateTime?
+  nextReviewAt    DateTime?
+  reviewCount     Int       @default(0)
+  correctCount    Int       @default(0)
+  incorrectCount  Int       @default(0)
+  hintCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@map("user_words")
+}
+
+model LearningSession {
+  id            String    @id @default(cuid())
+  userId        String
+  sessionType   String    // "new_words" | "revision" | "challenge" | "weak_words"
+  date          String    // ISO date string YYYY-MM-DD for deduplication
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  totalWords    Int       @default(0)
+  correctCount  Int       @default(0)
+  score         Float?
+  isCompleted   Boolean   @default(false)
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewAttempts ReviewAttempt[]
+
+  @@map("learning_sessions")
+}
+
+model ReviewAttempt {
+  id           String   @id @default(cuid())
+  userId       String
+  wordId       String
+  sessionId    String?
+  questionType String   // meaning, reverse, synonym, antonym, fill_blank, sentence, mcq_meaning, mcq_synonym, mcq_antonym
+  userAnswer   String?
+  isCorrect    Boolean  @default(false)
+  score        Float?   @default(0)
+  aiFeedback   String?
+  createdAt    DateTime @default(now())
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word    Word             @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  session LearningSession? @relation(fields: [sessionId], references: [id])
+
+  @@map("review_attempts")
+}
+
+model UserSentence {
+  id               String   @id @default(cuid())
+  userId           String
+  wordId           String
+  sentence         String
+  aiScore          Float?
+  aiIsCorrect      Boolean?
+  aiFeedback       String?
+  correctedSentence String?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@map("user_sentences")
+}
+
+model UserFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  wordId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@map("user_favorites")
+}
+
+model UserStreak {
+  id          String   @id @default(cuid())
+  userId      String
+  date        String   // ISO date YYYY-MM-DD
+  completed   Boolean  @default(false)
+  wordsLearned Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("user_streaks")
+}

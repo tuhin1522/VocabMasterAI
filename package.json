@@ -1,0 +1,14 @@
+{
+  "name": "vocabmaster-ai",
+  "version": "1.0.0",
+  "description": "AI-powered English vocabulary learning platform",
+  "scripts": {
+    "setup": "npm run setup:server && npm run setup:client",
+    "setup:server": "cd server && npm install",
+    "setup:client": "cd client && npm install",
+    "db:setup": "cd server && npm run db:generate && npm run db:push && npm run db:seed",
+    "dev": "npm run dev:server & npm run dev:client",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  }
+}
